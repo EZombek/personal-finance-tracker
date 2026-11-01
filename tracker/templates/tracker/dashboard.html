@@ -55,6 +55,26 @@
         tr:last-child td {
             border-bottom: none;
         }
+
+        .month-filter {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 24px 0;
+        }
+        .month-filter input,
+        .month-filter button {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .month-filter button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -62,6 +82,13 @@
         <h1>Personal Finance Tracker</h1>
         <p> <a href="{% url 'add_transaction' %}">+ Add Transaction</a></p>
         <p> Your personal financial overview</p>
+
+        <form method="get" class="month-filter">
+            <label for="month">Select Month:</label>
+            <input type="month" id="month" name="month" value="{{ selected_month }}">
+            <button type="submit">View Month</button>
+        </form>
+
         <div class="cards">
             <div class="card">
                 <h2>Income</h2>

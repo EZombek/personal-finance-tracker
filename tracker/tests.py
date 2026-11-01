@@ -46,14 +46,31 @@ class DashboardTests(TestCase):
             transaction_type="expense",
             date=date.today()
         )
-        response = self.client.get(reverse("dashboard"))
+        response = self.client.get(reverse("dashboard"), {"month": "2026-11"})
         self.assertEqual(response.context["income"], Decimal("3000.00"))
         self.assertEqual(response.context["expenses"], Decimal("1200.00"))
         self.assertEqual(response.context["remaining"], Decimal("1800.00"))  # Remaining balance
 
-        def test_dashboard_with_no_transactions(self):
-            response = self.client.get(reverse("dashboard"))
-            self.assertEqual(response.context["remaining"], Decimal("0.00"))
+    def test_dashboard_with_no_transactions(self):
+        response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.context["remaining"], Decimal("0.00"))
+
+    def test_dashboard_filters_by_month(self):
+        Transaction.objects.create(
+            description="October Paycheck",
+            amount=Decimal("2000.00"),
+            transaction_type="income",
+            date=date(2026, 10, 15)
+        )
+        Transaction.objects.create(
+            description="November Paycheck",
+            amount=Decimal("3000.00"),
+            transaction_type="income",
+            date=date(2026, 11, 1)
+        )
+        response = self.client.get(reverse("dashboard"), {"month": "2026-11"})
+        self.assertEqual(response.context["income"], Decimal("3000.00"))
+        self.assertEqual(response.context["transactions"].count(),1)  # One transaction in November
 
 class TransactionFormTests(TestCase):
     def test_add_transaction_page_loads(self):
