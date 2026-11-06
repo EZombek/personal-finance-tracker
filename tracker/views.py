@@ -29,6 +29,19 @@ def dashboard(request):
 
     remaining = income - expenses
 
+    category_totals = monthly_transactions.filter(transaction_type="expense").values("category").annotate(total=Sum("amount")).order_by("-total")
+
+    category_choices = dict(Transaction.CATEGORIES)
+
+    spending_categories = [
+        {
+            "name": category_choices.get(item["category"], item["category"]),
+            "amount": item["total"],
+            "percentage": (item["total"] / expenses * 100) if expenses > 0 else Decimal("0.00"),
+        }
+        for item in category_totals
+    ]
+
     transactions = monthly_transactions.order_by("-date", "-id")
 
     context = {
@@ -36,7 +49,8 @@ def dashboard(request):
         'expenses': expenses,
         'remaining': remaining,
         'transactions': transactions,
-        'selected_month': selected_month
+        'selected_month': selected_month,
+        'spending_categories': spending_categories,
     }
 
     return render(request, 'tracker/dashboard.html', context)

@@ -71,6 +71,51 @@ class DashboardTests(TestCase):
         response = self.client.get(reverse("dashboard"), {"month": "2026-11"})
         self.assertEqual(response.context["income"], Decimal("3000.00"))
         self.assertEqual(response.context["transactions"].count(),1)  # One transaction in November
+        
+    def test_dashboard_groups_expenses_by_category(self):
+        Transaction.objects.create(
+            description="Groceries",
+            amount=Decimal("100.00"),
+            transaction_type="expense",
+            category="groceries",
+            date=date(2026, 11, 1),
+        )
+
+        Transaction.objects.create(
+            description="More groceries",
+            amount=Decimal("50.00"),
+            transaction_type="expense",
+            category="groceries",
+            date=date(2026, 11, 2),
+        )
+
+        Transaction.objects.create(
+            description="Gas",
+            amount=Decimal("50.00"),
+            transaction_type="expense",
+            category="transportation",
+            date=date(2026, 11, 3),
+        )
+
+        response = self.client.get(
+            reverse("dashboard"),
+            {"month": "2026-11"},
+        )
+
+        categories = {
+            item["name"]: item["amount"]
+            for item in response.context["spending_categories"]
+        }
+
+        self.assertEqual(
+            categories["Groceries"],
+            Decimal("150.00"),
+        )
+
+        self.assertEqual(
+            categories["Transportation"],
+            Decimal("50.00"),
+        )
 
 class TransactionFormTests(TestCase):
     def test_add_transaction_page_loads(self):
@@ -83,6 +128,7 @@ class TransactionFormTests(TestCase):
             "description": "Gas",
             "amount": "50.00",
             "transaction_type": "expense",
+            "category": "transportation",
             "date": date.today()
         })
         self.assertEqual(response.status_code, 302)  # Redirect after successful save
@@ -90,8 +136,10 @@ class TransactionFormTests(TestCase):
         self.assertEqual(Transaction.objects.count(), 1)
 
         transaction = Transaction.objects.first()
+
         self.assertEqual(transaction.description, "Gas")
         self.assertEqual(transaction.amount, Decimal("50.00"))
+        self.assertEqual(transaction.category, "transportation")
 
     def test_invalid_transaction_is_not_saved(self):
         response = self.client.post(reverse("add_transaction"), {

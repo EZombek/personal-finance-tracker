@@ -75,6 +75,33 @@
             border: none;
             cursor: pointer;
         }
+        .category-section {
+            background: white;
+            padding: 24px;
+            margin-top: 32px;
+            border-radius: 12px;
+        }
+        .category-item {
+            margin-bottom: 20px;
+        }
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .progress-track {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            width: var(--progress-width);
+            height: 100%;
+            background: #30826f;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -103,6 +130,26 @@
                 <p class="amount">${{ remaining }}</p>
             </div>
         </div>
+        
+        <section class="category-section">
+            <h2>Spending by Category</h2>
+
+            {% for category in spending_categories %}
+                <div class="category-item">
+                    <div class="category-header">
+                        <span>{{ category.name }}</span>
+                        <strong>{{ category.amount }}%</strong>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" style="--progress-width: {{ category.percentage|floatformat:0 }}%;"></div>"
+                </div>
+                
+            </div>
+            {% empty %}
+                <p>No expenses recorded for this month.</p>
+            {% endfor %}
+        </section>
+
         <section class="transactions">
             <h2>Recent Transactions</h2>
             <table>
@@ -112,6 +159,7 @@
                         <th>Description</th>
                         <th>Type</th>
                         <th>Amount</th>
+                        <th>Category</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -121,10 +169,11 @@
                         <td>{{ transaction.description }}</td>
                         <td>{{ transaction.get_transaction_type_display }}</td>
                         <td>${{ transaction.amount }}</td>
+                        <td>{{ transaction.get_category_display }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4">No transactions recorded yet.</td>
+                        <td colspan="5">No transactions recorded yet.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

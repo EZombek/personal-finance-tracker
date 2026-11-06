@@ -5,6 +5,5 @@ from .models import Transaction
 class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
-        fields = ['description', 'amount', 'transaction_type', 'date']
+        fields = ['description', 'amount', 'transaction_type', 'category', 'date']
         widgets = {"date": forms.DateInput(attrs={"type": "date"})}
-        
